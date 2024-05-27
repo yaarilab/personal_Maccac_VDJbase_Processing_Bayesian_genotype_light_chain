@@ -1,6 +1,7 @@
 $HOSTNAME = ""
 params.outdir = 'results'  
 
+// part 1
 params.make_igblast_ndm.ndm_chain = params.ndm_chain
 
 

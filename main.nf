@@ -174,6 +174,7 @@ params.ogrdbstats_report.chain = params.chain
 if (!params.v_germline_file){params.v_germline_file = ""} 
 if (!params.d_germline){params.d_germline = ""} 
 if (!params.j_germline){params.j_germline = ""} 
+if (!params.airr_seq){params.airr_seq = ""} 
 // Stage empty file to be used as an optional input where required
 ch_empty_file_1 = file("$baseDir/.emptyfiles/NO_FILE_1", hidden:true)
 ch_empty_file_2 = file("$baseDir/.emptyfiles/NO_FILE_2", hidden:true)
@@ -182,6 +183,7 @@ ch_empty_file_3 = file("$baseDir/.emptyfiles/NO_FILE_3", hidden:true)
 Channel.fromPath(params.v_germline_file, type: 'any').map{ file -> tuple(file.baseName, file) }.set{g_2_germlineFastaFile_g_92}
 Channel.fromPath(params.d_germline, type: 'any').map{ file -> tuple(file.baseName, file) }.into{g_3_germlineFastaFile_g_75;g_3_germlineFastaFile_g0_16;g_3_germlineFastaFile_g0_12;g_3_germlineFastaFile_g14_0;g_3_germlineFastaFile_g14_1;g_3_germlineFastaFile_g11_16;g_3_germlineFastaFile_g11_12}
 Channel.fromPath(params.j_germline, type: 'any').map{ file -> tuple(file.baseName, file) }.set{g_4_germlineFastaFile_g_90}
+Channel.fromPath(params.airr_seq, type: 'any').map{ file -> tuple(file.baseName, file) }.into{g_94_fastaFile_g0_9;g_94_fastaFile_g0_12}
 
 g_4_germlineFastaFile_g_90= g_4_germlineFastaFile_g_90.ifEmpty([""]) 
 
@@ -565,6 +567,7 @@ make_igblast_ndm ${germlineFile} ${chain} ${ndm_file}
 process First_Alignment_IgBlastn {
 
 input:
+ set val(name),file(fastaFile) from g_94_fastaFile_g0_9
  file db_v from g0_22_germlineDb0_g0_9
  file db_d from g0_16_germlineDb0_g0_9
  file db_j from g0_17_germlineDb0_g0_9
@@ -614,6 +617,7 @@ process First_Alignment_MakeDb {
 
 publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*_db-fail.tsv$/) "failed_makedb_reads_first_alignment/$filename"}
 input:
+ set val(name),file(fastaFile) from g_94_fastaFile_g0_12
  set val(name_igblast),file(igblastOut) from g0_9_igblastOut0_g0_12
  set val(name1), file(v_germline_file) from g_92_germlineFastaFile0_g0_12
  set val(name2), file(d_germline_file) from g_3_germlineFastaFile_g0_12

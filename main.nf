@@ -415,7 +415,7 @@ input:
  set val(name), file(v_ref) from g_2_germlineFastaFile_g_92
 
 output:
- set val(name), file("new_V*")  into g_92_germlineFastaFile0_g_93, g_92_germlineFastaFile0_g_68, g_92_germlineFastaFile0_g0_22, g_92_germlineFastaFile0_g0_43, g_92_germlineFastaFile0_g0_47, g_92_germlineFastaFile0_g0_12
+ set val(name), file("new_V*")  into g_92_germlineFastaFile0_g_93, g_92_germlineFastaFile0_g_68, g_92_germlineFastaFile0_g_8, g_92_germlineFastaFile0_g0_22, g_92_germlineFastaFile0_g0_43, g_92_germlineFastaFile0_g0_47, g_92_germlineFastaFile0_g0_12
  file "changes.csv" optional true  into g_92_csvFile11
 
 
@@ -1049,6 +1049,7 @@ publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*
 publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /V_novel_germline.fasta$/) "v_refs/$filename"}
 input:
  set val(name),file(airr_file) from g0_19_outputFileTSV0_g_8
+ set val(v_germline_name), file(v_germline_file) from g_92_germlineFastaFile0_g_8
 
 output:
  set val(name),file("*novel-passed.tsv") optional true  into g_8_outputFileTSV00

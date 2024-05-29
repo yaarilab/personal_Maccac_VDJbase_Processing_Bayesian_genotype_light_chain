@@ -178,10 +178,9 @@ if (!params.airr_seq){params.airr_seq = ""}
 // Stage empty file to be used as an optional input where required
 ch_empty_file_1 = file("$baseDir/.emptyfiles/NO_FILE_1", hidden:true)
 ch_empty_file_2 = file("$baseDir/.emptyfiles/NO_FILE_2", hidden:true)
-ch_empty_file_3 = file("$baseDir/.emptyfiles/NO_FILE_3", hidden:true)
 
 Channel.fromPath(params.v_germline_file, type: 'any').map{ file -> tuple(file.baseName, file) }.set{g_2_germlineFastaFile_g_92}
-Channel.fromPath(params.d_germline, type: 'any').map{ file -> tuple(file.baseName, file) }.into{g_3_germlineFastaFile_g_75;g_3_germlineFastaFile_g0_16;g_3_germlineFastaFile_g0_12;g_3_germlineFastaFile_g14_0;g_3_germlineFastaFile_g14_1;g_3_germlineFastaFile_g11_16;g_3_germlineFastaFile_g11_12}
+Channel.fromPath(params.d_germline, type: 'any').map{ file -> tuple(file.baseName, file) }.into{g_3_germlineFastaFile_g_75;g_3_germlineFastaFile_g0_16;g_3_germlineFastaFile_g0_12;g_3_germlineFastaFile_g11_16;g_3_germlineFastaFile_g11_12}
 Channel.fromPath(params.j_germline, type: 'any').map{ file -> tuple(file.baseName, file) }.set{g_4_germlineFastaFile_g_90}
 Channel.fromPath(params.airr_seq, type: 'any').map{ file -> tuple(file.baseName, file) }.into{g_94_fastaFile_g0_9;g_94_fastaFile_g0_12}
 
@@ -194,7 +193,7 @@ input:
  set val(name), file(J_ref) from g_4_germlineFastaFile_g_90
 
 output:
- set val(name), file("new_J_novel_germline*")  into g_90_germlineFastaFile0_g_31, g_90_germlineFastaFile0_g_91, g_90_germlineFastaFile0_g0_17, g_90_germlineFastaFile0_g0_12, g_90_germlineFastaFile0_g11_17, g_90_germlineFastaFile0_g11_12, g_90_germlineFastaFile0_g14_0, g_90_germlineFastaFile0_g14_1
+ set val(name), file("new_J_novel_germline*")  into g_90_germlineFastaFile0_g_31, g_90_germlineFastaFile0_g_91, g_90_germlineFastaFile0_g0_17, g_90_germlineFastaFile0_g0_12, g_90_germlineFastaFile0_g11_17, g_90_germlineFastaFile0_g11_12
  file "changes.csv" optional true  into g_90_outputFileCSV11
 
 
@@ -309,56 +308,6 @@ annotate_j ${germlineFile} ${aux_file}
 }
 
 
-process First_Alignment_D_MakeBlastDb {
-
-input:
- set val(db_name), file(germlineFile) from g_3_germlineFastaFile_g0_16
-
-output:
- file "${db_name}"  into g0_16_germlineDb0_g0_9
-
-script:
-
-if(germlineFile.getName().endsWith("fasta")){
-	"""
-	sed -e '/^>/! s/[.]//g' ${germlineFile} > tmp_germline.fasta
-	mkdir -m777 ${db_name}
-	makeblastdb -parse_seqids -dbtype nucl -in tmp_germline.fasta -out ${db_name}/${db_name}
-	"""
-}else{
-	"""
-	echo something if off
-	"""
-}
-
-}
-
-
-process First_Alignment_J_MakeBlastDb {
-
-input:
- set val(db_name), file(germlineFile) from g_90_germlineFastaFile0_g0_17
-
-output:
- file "${db_name}"  into g0_17_germlineDb0_g0_9
-
-script:
-
-if(germlineFile.getName().endsWith("fasta")){
-	"""
-	sed -e '/^>/! s/[.]//g' ${germlineFile} > tmp_germline.fasta
-	mkdir -m777 ${db_name}
-	makeblastdb -parse_seqids -dbtype nucl -in tmp_germline.fasta -out ${db_name}/${db_name}
-	"""
-}else{
-	"""
-	echo something if off
-	"""
-}
-
-}
-
-
 process Second_Alignment_D_MakeBlastDb {
 
 input:
@@ -391,6 +340,56 @@ input:
 
 output:
  file "${db_name}"  into g11_17_germlineDb0_g11_9
+
+script:
+
+if(germlineFile.getName().endsWith("fasta")){
+	"""
+	sed -e '/^>/! s/[.]//g' ${germlineFile} > tmp_germline.fasta
+	mkdir -m777 ${db_name}
+	makeblastdb -parse_seqids -dbtype nucl -in tmp_germline.fasta -out ${db_name}/${db_name}
+	"""
+}else{
+	"""
+	echo something if off
+	"""
+}
+
+}
+
+
+process First_Alignment_D_MakeBlastDb {
+
+input:
+ set val(db_name), file(germlineFile) from g_3_germlineFastaFile_g0_16
+
+output:
+ file "${db_name}"  into g0_16_germlineDb0_g0_9
+
+script:
+
+if(germlineFile.getName().endsWith("fasta")){
+	"""
+	sed -e '/^>/! s/[.]//g' ${germlineFile} > tmp_germline.fasta
+	mkdir -m777 ${db_name}
+	makeblastdb -parse_seqids -dbtype nucl -in tmp_germline.fasta -out ${db_name}/${db_name}
+	"""
+}else{
+	"""
+	echo something if off
+	"""
+}
+
+}
+
+
+process First_Alignment_J_MakeBlastDb {
+
+input:
+ set val(db_name), file(germlineFile) from g_90_germlineFastaFile0_g0_17
+
+output:
+ file "${db_name}"  into g0_17_germlineDb0_g0_9
 
 script:
 
@@ -1212,7 +1211,8 @@ input:
  set val(name), file(v_ref) from g_8_germlineFastaFile1_g_70
 
 output:
- set val(name), file("new_V_novel_germline*")  into g_70_germlineFastaFile0_g_78, g_70_germlineFastaFile0_g_29, g_70_germlineFastaFile0_g14_0, g_70_germlineFastaFile0_g14_1, g_70_germlineFastaFile0_g11_22, g_70_germlineFastaFile0_g11_12, g_70_germlineFastaFile0_g11_43, g_70_germlineFastaFile0_g11_47
+ set val(name), file("new_V_novel_germline*")  into g_70_germlineFastaFile0_g_78, g_70_germlineFastaFile0_g_29, g_70_germlineFastaFile0_g11_22, g_70_germlineFastaFile0_g11_12, g_70_germlineFastaFile0_g11_43, g_70_germlineFastaFile0_g11_47
+ file "changes.csv" optional true  into g_70_outputFileCSV11
 
 
 script:
@@ -1267,10 +1267,27 @@ def dataframe_to_fasta(df, output_file, description_column='Description', defaul
 
     with open(output_file, 'w') as output_handle:
         SeqIO.write(records, output_handle, 'fasta')
+
+def save_changes_to_csv(old_df, new_df, output_file):
+    changes = []
+    for index, (old_row, new_row) in enumerate(zip(old_df.itertuples(), new_df.itertuples()), 1):
+        if old_row.ID != new_row.ID:
+            changes.append({'Row': index, 'Old_ID': old_row.ID, 'New_ID': new_row.ID})
+    
+    changes_df = pd.DataFrame(changes)
+    if not changes_df.empty:
+        changes_df.to_csv(output_file, index=False)
         
 output_file_path = 'new_V_novel_germline.fasta'
 
 dataframe_to_fasta(df, output_file_path)
+
+
+file_path = '${readArray_v_ref}'  # Replace with the actual path
+old_df = fasta_to_dataframe(file_path)
+
+output_csv_file = "changes.csv"
+save_changes_to_csv(old_df, df, output_csv_file)
 
 """
 } else{
@@ -1399,7 +1416,7 @@ input:
  set val(name3), file(j_germline_file) from g_90_germlineFastaFile0_g11_12
 
 output:
- set val(name_igblast),file("*_db-pass.tsv") optional true  into g11_12_outputFileTSV0_g11_43, g11_12_outputFileTSV0_g11_47, g11_12_outputFileTSV0_g_76, g11_12_outputFileTSV0_g14_0, g11_12_outputFileTSV0_g14_9
+ set val(name_igblast),file("*_db-pass.tsv") optional true  into g11_12_outputFileTSV0_g11_43, g11_12_outputFileTSV0_g11_47, g11_12_outputFileTSV0_g_76, g11_12_outputFileTSV0_g_83
  set val("reference_set"), file("${reference_set}") optional true  into g11_12_germlineFastaFile11
  set val(name_igblast),file("*_db-fail.tsv") optional true  into g11_12_outputFileTSV22
 
@@ -1822,351 +1839,12 @@ rmarkdown::render("${rmk}", clean=TRUE, output_format="html_document", output_di
 """
 }
 
-g_70_germlineFastaFile0_g14_0= g_70_germlineFastaFile0_g14_0.ifEmpty([""]) 
-g_3_germlineFastaFile_g14_0= g_3_germlineFastaFile_g14_0.ifEmpty([""]) 
-g_90_germlineFastaFile0_g14_0= g_90_germlineFastaFile0_g14_0.ifEmpty([""]) 
-
-
-process Clone_AIRRseq_First_CreateGermlines {
-
-input:
- set val(name),file(airrFile) from g11_12_outputFileTSV0_g14_0
- set val(name1), file(v_germline_file) from g_70_germlineFastaFile0_g14_0
- set val(name2), file(d_germline_file) from g_3_germlineFastaFile_g14_0
- set val(name3), file(j_germline_file) from g_90_germlineFastaFile0_g14_0
-
-output:
- set val(name),file("*_germ-pass.tsv")  into g14_0_outputFileTSV0_g14_2
-
-script:
-failed = params.Clone_AIRRseq_First_CreateGermlines.failed
-format = params.Clone_AIRRseq_First_CreateGermlines.format
-g = params.Clone_AIRRseq_First_CreateGermlines.g
-cloned = params.Clone_AIRRseq_First_CreateGermlines.cloned
-seq_field = params.Clone_AIRRseq_First_CreateGermlines.seq_field
-v_field = params.Clone_AIRRseq_First_CreateGermlines.v_field
-d_field = params.Clone_AIRRseq_First_CreateGermlines.d_field
-j_field = params.Clone_AIRRseq_First_CreateGermlines.j_field
-clone_field = params.Clone_AIRRseq_First_CreateGermlines.clone_field
-
-
-failed = (failed=="true") ? "--failed" : ""
-format = (format=="airr") ? "": "--format changeo"
-g = "-g ${g}"
-cloned = (cloned=="false") ? "" : "--cloned"
-
-v_field = (v_field=="") ? "" : "--vf ${v_field}"
-d_field = (d_field=="") ? "" : "--df ${d_field}"
-j_field = (j_field=="") ? "" : "--jf ${j_field}"
-seq_field = (seq_field=="") ? "" : "--sf ${seq_field}"
-
-"""
-CreateGermlines.py \
-	-d ${airrFile} \
-	-r ${v_germline_file} ${d_germline_file} ${j_germline_file} \
-	${failed} \
-	${format} \
-	${g} \
-	${cloned} \
-	${v_field} \
-	${d_field} \
-	${j_field} \
-	${seq_field} \
-	${clone_field} \
-	--log CG_${name}.log 
-
-"""
-
-
-
-}
-
-
-process Clone_AIRRseq_DefineClones {
-
-input:
- set val(name),file(airrFile) from g14_0_outputFileTSV0_g14_2
-
-output:
- set val(name),file("*_clone-pass.tsv")  into g14_2_outputFileTSV0_g14_1
-
-script:
-failed = params.Clone_AIRRseq_DefineClones.failed
-format = params.Clone_AIRRseq_DefineClones.format
-seq_field = params.Clone_AIRRseq_DefineClones.seq_field
-v_field = params.Clone_AIRRseq_DefineClones.v_field
-d_field = params.Clone_AIRRseq_DefineClones.d_field
-j_field = params.Clone_AIRRseq_DefineClones.j_field
-group_fields = params.Clone_AIRRseq_DefineClones.group_fields
-
-mode = params.Clone_AIRRseq_DefineClones.mode
-dist = params.Clone_AIRRseq_DefineClones.dist
-norm = params.Clone_AIRRseq_DefineClones.norm
-act = params.Clone_AIRRseq_DefineClones.act
-model = params.Clone_AIRRseq_DefineClones.model
-sym = params.Clone_AIRRseq_DefineClones.sym
-link = params.Clone_AIRRseq_DefineClones.link
-maxmiss = params.Clone_AIRRseq_DefineClones.maxmiss
-
-failed = (failed=="true") ? "--failed" : ""
-format = (format=="airr") ? "--format airr": "--format changeo"
-group_fields = (group_fields=="") ? "" : "--gf ${group_fields}"
-v_field = (v_field=="") ? "" : "--vf ${v_field}"
-d_field = (d_field=="") ? "" : "--df ${d_field}"
-j_field = (j_field=="") ? "" : "--jf ${j_field}"
-seq_field = (seq_field=="") ? "" : "--sf ${seq_field}"
-
-
-mode = (mode=="gene") ? "" : "--mode ${mode}"
-norm = (norm=="len") ? "" : "--norn ${norm}"
-act = (act=="set") ? "" : "--act ${act}"
-model = (model=="ham") ? "" : "--model ${model}"
-sym = (sym=="avg") ? "" : "--sym ${sym}"
-link = (link=="single") ? "" : " --link ${link}"
-    
-	
-"""
-DefineClones.py -d ${airrFile} \
-	${failed} \
-	${format} \
-	${v_field} \
-	${d_field} \
-	${j_field} \
-	${seq_field} \
-	${group_fields} \
-	${mode} \
-	${act} \
-	${model} \
-	--dist ${dist} \
-	${norm} \
-	${sym} \
-	${link} \
-	--maxmiss ${maxmiss} \
-	--log DF_.log  
-"""
-
-
-
-}
-
-g_70_germlineFastaFile0_g14_1= g_70_germlineFastaFile0_g14_1.ifEmpty([""]) 
-g_3_germlineFastaFile_g14_1= g_3_germlineFastaFile_g14_1.ifEmpty([""]) 
-g_90_germlineFastaFile0_g14_1= g_90_germlineFastaFile0_g14_1.ifEmpty([""]) 
-
-
-process Clone_AIRRseq_Second_CreateGermlines {
-
-publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*_germ-pass.tsv$/) "rearrangements/$filename"}
-input:
- set val(name),file(airrFile) from g14_2_outputFileTSV0_g14_1
- set val(name1), file(v_germline_file) from g_70_germlineFastaFile0_g14_1
- set val(name2), file(d_germline_file) from g_3_germlineFastaFile_g14_1
- set val(name3), file(j_germline_file) from g_90_germlineFastaFile0_g14_1
-
-output:
- set val(name),file("*_germ-pass.tsv")  into g14_1_outputFileTSV0_g14_9
-
-script:
-failed = params.Clone_AIRRseq_Second_CreateGermlines.failed
-format = params.Clone_AIRRseq_Second_CreateGermlines.format
-g = params.Clone_AIRRseq_Second_CreateGermlines.g
-cloned = params.Clone_AIRRseq_Second_CreateGermlines.cloned
-seq_field = params.Clone_AIRRseq_Second_CreateGermlines.seq_field
-v_field = params.Clone_AIRRseq_Second_CreateGermlines.v_field
-d_field = params.Clone_AIRRseq_Second_CreateGermlines.d_field
-j_field = params.Clone_AIRRseq_Second_CreateGermlines.j_field
-clone_field = params.Clone_AIRRseq_Second_CreateGermlines.clone_field
-
-
-failed = (failed=="true") ? "--failed" : ""
-format = (format=="airr") ? "": "--format changeo"
-g = "-g ${g}"
-cloned = (cloned=="false") ? "" : "--cloned"
-
-v_field = (v_field=="") ? "" : "--vf ${v_field}"
-d_field = (d_field=="") ? "" : "--df ${d_field}"
-j_field = (j_field=="") ? "" : "--jf ${j_field}"
-seq_field = (seq_field=="") ? "" : "--sf ${seq_field}"
-
-"""
-CreateGermlines.py \
-	-d ${airrFile} \
-	-r ${v_germline_file} ${d_germline_file} ${j_germline_file} \
-	${failed} \
-	${format} \
-	${g} \
-	${cloned} \
-	${v_field} \
-	${d_field} \
-	${j_field} \
-	${seq_field} \
-	${clone_field} \
-	--log CG_${name}.log 
-
-"""
-
-
-
-}
-
-
-process Clone_AIRRseq_single_clone_representative {
-
-publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*_clone_rep-passed.tsv.*$/) "rearrangements/$filename"}
-publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*png$/) "clone_report/$filename"}
-input:
- set val(name),file(airrFile) from g14_1_outputFileTSV0_g14_9
- set val(name1),file(source_airrFile) from g11_12_outputFileTSV0_g14_9
-
-output:
- set val(outname),file("*_clone_rep-passed.tsv*")  into g14_9_outputFileTSV0_g_83
- file "*.pdf" optional true  into g14_9_outputFilePdf11
- set val(name), file("*txt")  into g14_9_logFile2_g_63
- file "*png"  into g14_9_outputFile33
-
-script:
-outname = airrFile.toString() - '.tsv' +"_clone_rep-passed"
-outfile = outname + ".tsv"
-
-"""
-#!/usr/bin/env Rscript
-
-## functions
-# find the different position between sequences
-
-src <- 
-"#include <Rcpp.h>
-using namespace Rcpp;
-#include <iostream>
-#include <vector>
-#include <string>
-#include <algorithm>
-#include <unordered_set>
-
-// [[Rcpp::export]]
-
-int allele_diff(std::vector<std::string> germs) {
-    std::vector<std::vector<char>> germs_m;
-    for (const std::string& germ : germs) {
-        germs_m.push_back(std::vector<char>(germ.begin(), germ.end()));
-    }
-
-    int max_length = 0;
-    for (const auto& germ : germs_m) {
-        max_length = std::max(max_length, static_cast<int>(germ.size()));
-    }
-
-    for (auto& germ : germs_m) {
-        germ.resize(max_length, '.'); // Pad with '.' to make all germs equal length
-    }
-
-    auto setdiff_mat = [](const std::vector<char>& x) -> int {
-        std::unordered_set<char> unique_chars(x.begin(), x.end());
-        std::unordered_set<char> filter_chars = { '.', 'N', '-' };
-        int diff_count = 0;
-        for (const char& c : unique_chars) {
-            if (filter_chars.find(c) == filter_chars.end()) {
-                diff_count++;
-            }
-        }
-        return diff_count;
-    };
-
-    std::vector<int> idx;
-    for (int i = 0; i < max_length; i++) {
-        std::vector<char> column_chars;
-        for (const auto& germ : germs_m) {
-            column_chars.push_back(germ[i]);
-        }
-        int diff_count = setdiff_mat(column_chars);
-        if (diff_count > 1) {
-            idx.push_back(i);
-        }
-    }
-
-    return idx.size();
-}"
-
-## libraries
-require(dplyr)
-library(Rcpp)
-library(ggplot2)
-sourceCpp(code = src)
-
-data <- readr::read_tsv("${airrFile}")
-
-source_data <- readr::read_tsv("${source_airrFile}")
-
-# calculating mutation between IMGT sequence and the germline sequence, selecting a single sequence to each clone with the fewest mutations
-data[["mut"]] <- sapply(1:nrow(data),function(j){
-	x <- c(data[['sequence_alignment']][j], data[['germline_alignment_d_mask']][j])
-	allele_diff(x)
-})
-# filter to the fewest mutations
-data <- data %>% dplyr::group_by(clone_id) %>% 
-			dplyr::mutate(clone_size = n())
-
-data_report <- data %>% dplyr::rowwise() %>%
-			dplyr::mutate(v_gene = alakazam::getGene(v_call, strip_d = FALSE)) %>%
-			dplyr::group_by(v_gene, clone_id, clone_size) %>% dplyr::slice(1)
-
-print(head(data_report))
-
-p1 <- ggplot(data_report, aes(clone_size)) +
-	geom_histogram(bins = 100) +
-	facet_wrap(.~v_gene, ncol = 4)
-
-ggsave("clone_distribution_by_v_call.pdf", p1, width = 12, height = 25)
-
-max_clone_sizes <- data_report %>%
-  group_by(v_gene) %>%
-  summarize(max_clone_size = max(clone_size))
-
-# Create a list of plots
-plots <- lapply(seq(nrow(max_clone_sizes)), function(i) {
-  ggplot(data_report %>% filter(v_gene == max_clone_sizes[i,"v_gene"]), aes(clone_size)) +
-    geom_histogram(bins = max_clone_sizes[i,"max_clone_size"]) +
-    ggtitle(paste("v_gene =", max_clone_sizes[i,"v_gene"]))
-})
-
-# Combine the list of plots into a single plot
-library(gridExtra)
-final_plot <- do.call(grid.arrange, plots)
-
-
-ggsave("clone_distribution_by_v_call.png", final_plot, width = 30, height = 40)
-
-
-
-data <- data %>% dplyr::group_by(clone_id) %>% dplyr::slice(which.min(mut))
-cat(paste0('Note ', nrow(data),' sequences after selecting single representative'))
-readr::write_tsv(data, file = "${outfile}")
-
-x <- nrow(source_data)-nrow(data)
-
-lines <- c(
-    paste("START>", "After picking clonal representatives"),
-    paste("PASS>", nrow(data)),
-    paste("FAIL>", nrow(source_data)-nrow(data)),
-    paste("END>", "After picking clonal representatives"),
-    "",
-    ""
-  )
-
-
-file_path <- paste("${outname}","output.txt", sep="-")
-
-cat(lines, sep = "\n", file = file_path, append = TRUE)
-
-"""
-}
-
 
 process take_only_none_v_mut {
 
 publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*_no_mut.tsv.*$/) "rearrangements/$filename"}
 input:
- set val(name),file(airrFile) from g14_9_outputFileTSV0_g_83
+ set val(name),file(airrFile) from g11_12_outputFileTSV0_g_83
 
 output:
  set val(outname),file("*_no_mut.tsv*")  into g_83_outputFileTSV0_g_29, g_83_outputFileTSV0_g_31, g_83_outputFileTSV0_g_75
@@ -3491,7 +3169,7 @@ input:
  set val(name3), file(collapse_fail) from g0_19_outputFileTSV1_g0_27
 
 output:
- set val(name), file("*txt")  into g0_27_logFile0_g_63
+ set val(name), file("*txt")  into g0_27_logFile00
 
 script:
 
@@ -3532,75 +3210,6 @@ file_path <- paste(chartr(".", "1", x),"output.txt", sep="-")
 cat(lines, sep = "\n", file = file_path, append = TRUE)
 """
 
-}
-
-
-process maccac_pipeline_statistics {
-
-publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*csv$/) "pipeline_statistics/$filename"}
-input:
- set val(name), file(first_igblast) from g0_27_logFile0_g_63
- set val(name2), file(clone) from g14_9_logFile2_g_63
-
-output:
- file "*csv"  into g_63_outputFileCSV00
-
-
-script:
-
-readArray_first_igblast = first_igblast.toString().split(' ')
-readArray_clone = clone.toString().split(' ')
-
-
-
-"""
-#!/usr/bin/env Rscript 
-
-x1<-"${readArray_first_igblast[0]}"
-x2<-"${readArray_clone[0]}"
-
-file_names <- c(x1, x2)
-output_file <- "output.txt"
-content <- sapply(file_names, function(file) {
-  readLines(file)
-}, simplify = "c")
-writeLines(unlist(content), con = output_file)
-
-library(prestor)
-library(dplyr)
-
-console_log <- loadConsoleLog("output.txt")
-
-log_df <- console_log
-pass=c("PASS", "UNIQUE")
-fail=c("FAIL", "DUPLICATE", "UNDETERMINED")
-
-# Get passed entries
-pass_df <- log_df %>%
-    filter(!!rlang::sym("field") %in% pass) %>%
-    mutate_at("value", as.numeric) %>%
-    group_by(!!!rlang::syms(c("step", "task"))) %>%
-    dplyr::summarize(pass=sum(!!rlang::sym("value")))
-
-# Get failed entries
-fail_df <- log_df %>%
-    filter(!!rlang::sym("field") %in% fail) %>%
-    mutate_at("value", as.numeric) %>%
-    group_by(!!!rlang::syms(c("step", "task"))) %>%
-    summarize(fail=sum(!!rlang::sym("value")))
-
-# Merge passed and failed counts
-count_df <- inner_join(pass_df, fail_df, by=c("step", "task")) %>%
-    rowwise() %>%
-    dplyr::mutate(total=!!rlang::sym("pass") + !!rlang::sym("fail"),
-                  fraction=!!rlang::sym("pass") / !!rlang::sym("total"))
-
-
-df<-count_df[,c("task", "pass", "fail")]
-
-write.csv(df,"pipeline_statistics.csv") 
-
-"""
 }
 
 

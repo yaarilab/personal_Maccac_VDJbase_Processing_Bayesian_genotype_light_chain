@@ -76,6 +76,16 @@ params.Second_Alignment_MakeDb.name_alignment = "_Second_Alignment"
 
 // part 4
 
+params.CreateGermlines.failed = "false"
+params.CreateGermlines.format = "airr"
+params.CreateGermlines.g = "dmask"
+params.CreateGermlines.cloned = "false"
+params.CreateGermlines.seq_field = ""
+params.CreateGermlines.v_field = ""
+params.CreateGermlines.d_field = ""
+params.CreateGermlines.j_field = ""
+params.CreateGermlines.clone_field = ""
+
 
 // part 5
 
@@ -140,9 +150,10 @@ if (!params.airr_seq){params.airr_seq = ""}
 // Stage empty file to be used as an optional input where required
 ch_empty_file_1 = file("$baseDir/.emptyfiles/NO_FILE_1", hidden:true)
 ch_empty_file_2 = file("$baseDir/.emptyfiles/NO_FILE_2", hidden:true)
+ch_empty_file_3 = file("$baseDir/.emptyfiles/NO_FILE_3", hidden:true)
 
 Channel.fromPath(params.v_germline_file, type: 'any').map{ file -> tuple(file.baseName, file) }.set{g_2_germlineFastaFile_g_92}
-Channel.fromPath(params.d_germline, type: 'any').map{ file -> tuple(file.baseName, file) }.into{g_3_germlineFastaFile_g_75;g_3_germlineFastaFile_g0_16;g_3_germlineFastaFile_g0_12;g_3_germlineFastaFile_g11_16;g_3_germlineFastaFile_g11_12}
+Channel.fromPath(params.d_germline, type: 'any').map{ file -> tuple(file.baseName, file) }.into{g_3_germlineFastaFile_g_75;g_3_germlineFastaFile_g_95;g_3_germlineFastaFile_g0_16;g_3_germlineFastaFile_g0_12;g_3_germlineFastaFile_g11_16;g_3_germlineFastaFile_g11_12}
 Channel.fromPath(params.j_germline, type: 'any').map{ file -> tuple(file.baseName, file) }.set{g_4_germlineFastaFile_g_90}
 Channel.fromPath(params.airr_seq, type: 'any').map{ file -> tuple(file.baseName, file) }.into{g_94_fastaFile_g0_9;g_94_fastaFile_g0_12}
 
@@ -155,7 +166,7 @@ input:
  set val(name), file(J_ref) from g_4_germlineFastaFile_g_90
 
 output:
- set val(name), file("new_J_novel_germline*")  into g_90_germlineFastaFile0_g_31, g_90_germlineFastaFile0_g_91, g_90_germlineFastaFile0_g0_17, g_90_germlineFastaFile0_g0_12, g_90_germlineFastaFile0_g11_17, g_90_germlineFastaFile0_g11_12
+ set val(name), file("new_J_novel_germline*")  into g_90_germlineFastaFile0_g_31, g_90_germlineFastaFile0_g_91, g_90_germlineFastaFile0_g_95, g_90_germlineFastaFile0_g0_17, g_90_germlineFastaFile0_g0_12, g_90_germlineFastaFile0_g11_17, g_90_germlineFastaFile0_g11_12
  file "changes.csv" optional true  into g_90_outputFileCSV11
 
 
@@ -376,7 +387,7 @@ input:
  set val(name), file(v_ref) from g_2_germlineFastaFile_g_92
 
 output:
- set val(name), file("new_V*")  into g_92_germlineFastaFile0_g_93, g_92_germlineFastaFile0_g_68, g_92_germlineFastaFile0_g_8, g_92_germlineFastaFile0_g0_22, g_92_germlineFastaFile0_g0_43, g_92_germlineFastaFile0_g0_47, g_92_germlineFastaFile0_g0_12
+ set val(name), file("new_V*")  into g_92_germlineFastaFile0_g_93, g_92_germlineFastaFile0_g_68, g_92_germlineFastaFile0_g_8, g_92_germlineFastaFile0_g_95, g_92_germlineFastaFile0_g0_22, g_92_germlineFastaFile0_g0_43, g_92_germlineFastaFile0_g0_47, g_92_germlineFastaFile0_g0_12
  file "changes.csv" optional true  into g_92_csvFile11
 
 
@@ -1378,7 +1389,7 @@ input:
  set val(name3), file(j_germline_file) from g_90_germlineFastaFile0_g11_12
 
 output:
- set val(name_igblast),file("*_db-pass.tsv") optional true  into g11_12_outputFileTSV0_g11_43, g11_12_outputFileTSV0_g11_47, g11_12_outputFileTSV0_g_76, g11_12_outputFileTSV0_g_83
+ set val(name_igblast),file("*_db-pass.tsv") optional true  into g11_12_outputFileTSV0_g11_43, g11_12_outputFileTSV0_g11_47, g11_12_outputFileTSV0_g_76, g11_12_outputFileTSV0_g_95
  set val("reference_set"), file("${reference_set}") optional true  into g11_12_germlineFastaFile11
  set val(name_igblast),file("*_db-fail.tsv") optional true  into g11_12_outputFileTSV22
 
@@ -1801,12 +1812,71 @@ rmarkdown::render("${rmk}", clean=TRUE, output_format="html_document", output_di
 """
 }
 
+g_92_germlineFastaFile0_g_95= g_92_germlineFastaFile0_g_95.ifEmpty([""]) 
+g_3_germlineFastaFile_g_95= g_3_germlineFastaFile_g_95.ifEmpty([""]) 
+g_90_germlineFastaFile0_g_95= g_90_germlineFastaFile0_g_95.ifEmpty([""]) 
+
+
+process CreateGermlines {
+
+input:
+ set val(name),file(airrFile) from g11_12_outputFileTSV0_g_95
+ set val(name1), file(v_germline_file) from g_92_germlineFastaFile0_g_95
+ set val(name2), file(d_germline_file) from g_3_germlineFastaFile_g_95
+ set val(name3), file(j_germline_file) from g_90_germlineFastaFile0_g_95
+
+output:
+ set val(name),file("*_germ-pass.tsv")  into g_95_outputFileTSV0_g_83
+
+script:
+failed = params.CreateGermlines.failed
+format = params.CreateGermlines.format
+g = params.CreateGermlines.g
+cloned = params.CreateGermlines.cloned
+seq_field = params.CreateGermlines.seq_field
+v_field = params.CreateGermlines.v_field
+d_field = params.CreateGermlines.d_field
+j_field = params.CreateGermlines.j_field
+clone_field = params.CreateGermlines.clone_field
+
+
+failed = (failed=="true") ? "--failed" : ""
+format = (format=="airr") ? "": "--format changeo"
+g = "-g ${g}"
+cloned = (cloned=="false") ? "" : "--cloned"
+
+v_field = (v_field=="") ? "" : "--vf ${v_field}"
+d_field = (d_field=="") ? "" : "--df ${d_field}"
+j_field = (j_field=="") ? "" : "--jf ${j_field}"
+seq_field = (seq_field=="") ? "" : "--sf ${seq_field}"
+
+"""
+CreateGermlines.py \
+	-d ${airrFile} \
+	-r ${v_germline_file} ${d_germline_file} ${j_germline_file} \
+	${failed} \
+	${format} \
+	${g} \
+	${cloned} \
+	${v_field} \
+	${d_field} \
+	${j_field} \
+	${seq_field} \
+	${clone_field} \
+	--log CG_${name}.log 
+
+"""
+
+
+
+}
+
 
 process take_only_none_v_mut {
 
 publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*_no_mut.tsv.*$/) "rearrangements/$filename"}
 input:
- set val(name),file(airrFile) from g11_12_outputFileTSV0_g_83
+ set val(name),file(airrFile) from g_95_outputFileTSV0_g_83
 
 output:
  set val(outname),file("*_no_mut.tsv*")  into g_83_outputFileTSV0_g_29, g_83_outputFileTSV0_g_31, g_83_outputFileTSV0_g_75

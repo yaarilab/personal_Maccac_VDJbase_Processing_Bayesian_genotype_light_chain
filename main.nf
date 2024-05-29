@@ -388,7 +388,7 @@ input:
 
 output:
  set val(name), file("new_V*")  into g_92_germlineFastaFile0_g_93, g_92_germlineFastaFile0_g_68, g_92_germlineFastaFile0_g_8, g_92_germlineFastaFile0_g_95, g_92_germlineFastaFile0_g0_22, g_92_germlineFastaFile0_g0_43, g_92_germlineFastaFile0_g0_47, g_92_germlineFastaFile0_g0_12
- file "changes.csv" optional true  into g_92_csvFile11
+ file "changes.csv" optional true  into g_92_csvFile1_g_96
 
 
 script:
@@ -914,7 +914,7 @@ input:
  set val(name), file(airrseq_data) from g0_19_outputFileTSV0_g_80
 
 output:
- set val(name), file(outfile)  into g_80_germlineFastaFile0_g11_12, g_80_germlineFastaFile0_g11_9, g_80_germlineFastaFile0_g21_12, g_80_germlineFastaFile0_g21_9
+ set val(name), file(outfile)  into g_80_germlineFastaFile0_g21_12, g_80_germlineFastaFile0_g21_9
 
 script:
 
@@ -1184,7 +1184,7 @@ input:
  set val(name), file(v_ref) from g_8_germlineFastaFile1_g_70
 
 output:
- set val(name), file("new_V_novel_germline*")  into g_70_germlineFastaFile0_g_78, g_70_germlineFastaFile0_g_29, g_70_germlineFastaFile0_g11_22, g_70_germlineFastaFile0_g11_12, g_70_germlineFastaFile0_g11_43, g_70_germlineFastaFile0_g11_47
+ set val(name), file("new_V_novel_germline*")  into g_70_germlineFastaFile0_g_78, g_70_germlineFastaFile0_g11_22, g_70_germlineFastaFile0_g11_12, g_70_germlineFastaFile0_g11_43, g_70_germlineFastaFile0_g11_47
  file "changes.csv" optional true  into g_70_outputFileCSV11
 
 
@@ -1332,7 +1332,6 @@ make_igblast_ndm ${germlineFile} ${chain} ${ndm_file}
 process Second_Alignment_IgBlastn {
 
 input:
- set val(name),file(fastaFile) from g_80_germlineFastaFile0_g11_9
  file db_v from g11_22_germlineDb0_g11_9
  file db_d from g11_16_germlineDb0_g11_9
  file db_j from g11_17_germlineDb0_g11_9
@@ -1382,7 +1381,6 @@ process Second_Alignment_MakeDb {
 
 publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*_db-fail.tsv$/) "failed_collapse/$filename"}
 input:
- set val(name),file(fastaFile) from g_80_germlineFastaFile0_g11_12
  set val(name_igblast),file(igblastOut) from g11_9_igblastOut0_g11_12
  set val(name1), file(v_germline_file) from g_70_germlineFastaFile0_g11_12
  set val(name2), file(d_germline_file) from g_3_germlineFastaFile_g11_12
@@ -1826,7 +1824,7 @@ input:
  set val(name3), file(j_germline_file) from g_90_germlineFastaFile0_g_95
 
 output:
- set val(name),file("*_germ-pass.tsv")  into g_95_outputFileTSV0_g_83
+ set val(name),file("*_germ-pass.tsv")  into g_95_outputFileTSV0_g_96
 
 script:
 failed = params.CreateGermlines.failed
@@ -1871,12 +1869,76 @@ CreateGermlines.py \
 
 }
 
+g_92_csvFile1_g_96= g_92_csvFile1_g_96.ifEmpty([""]) 
+
+
+process change_light_germline_file_and_repertoire_file_names_back {
+
+input:
+ file csv from g_92_csvFile1_g_96
+ set val(name_igblast),file(rep_file) from g_95_outputFileTSV0_g_96
+
+output:
+ set val("${germline}"),file("${germline}")  into g_96_germlineFastaFile0_g_29
+ set val("${rep}"), file("${rep}")  into g_96_outputFileTSV1_g_83
+
+
+script:
+
+
+germline = germline_file.toString().split(' ')[0]
+rep = rep_file.toString().split(' ')[0]
+changes_csv = csv.toString().split(' ')[0]
+
+
+"""
+
+#!/usr/bin/env Rscript
+
+
+# Check if changes.csv file exists
+if (file.exists("changes.csv")) {
+
+  # Read changes from CSV
+  changes <- read.csv("changes.csv", header = FALSE, col.names = c("row", "old_id", "new_id"))
+
+  # Process changes and modify TSV files
+  for (change in 1:nrow(changes)) {
+  
+  
+    old_id <- changes[change,"old_id"]
+    new_id <- changes[change,"new_id"]
+    
+    asterisk_pos <- gregexpr("*", old_id, fixed = TRUE)[[1]]
+    old_id <- substring(old_id, asterisk_pos[1] + 1)
+    
+    asterisk_pos <- gregexpr("*", new_id, fixed = TRUE)[[1]]
+    new_id <- substring(new_id, asterisk_pos[1] + 1)
+
+    
+    # Modify genotype file
+    
+    system(paste("sed -i 's/", new_id, "/", old_id, "/g' ${rep}", sep = ""))
+    
+    system(paste("sed -i 's/", new_id, "/", old_id, "/g' ${germline}", sep = ""))
+
+  }
+
+
+} else {
+  cat("No changes.csv file found.")
+}
+
+"""
+
+}
+
 
 process take_only_none_v_mut {
 
 publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*_no_mut.tsv.*$/) "rearrangements/$filename"}
 input:
- set val(name),file(airrFile) from g_95_outputFileTSV0_g_83
+ set val(name),file(airrFile) from g_96_outputFileTSV1_g_83
 
 output:
  set val(outname),file("*_no_mut.tsv*")  into g_83_outputFileTSV0_g_29, g_83_outputFileTSV0_g_31, g_83_outputFileTSV0_g_75
@@ -2181,7 +2243,7 @@ publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /${
 publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /${call}_personal_reference.fasta$/) "v_refs/$filename"}
 input:
  set val(name),file(airrFile) from g_83_outputFileTSV0_g_29
- set val(name1), file(germline_file) from g_70_germlineFastaFile0_g_29
+ set val(name1), file(germline_file) from g_96_germlineFastaFile0_g_29
 
 output:
  set val("${call}_genotype"),file("${call}_genotype_report.tsv")  into g_29_outputFileTSV0_g_76

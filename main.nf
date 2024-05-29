@@ -76,44 +76,6 @@ params.Second_Alignment_MakeDb.name_alignment = "_Second_Alignment"
 
 // part 4
 
-// Process Parameters for Clone_AIRRseq_First_CreateGermlines:
-params.Clone_AIRRseq_First_CreateGermlines.failed = "false"
-params.Clone_AIRRseq_First_CreateGermlines.format = "airr"
-params.Clone_AIRRseq_First_CreateGermlines.g = "dmask"
-params.Clone_AIRRseq_First_CreateGermlines.cloned = "false"
-params.Clone_AIRRseq_First_CreateGermlines.seq_field = ""
-params.Clone_AIRRseq_First_CreateGermlines.v_field = ""
-params.Clone_AIRRseq_First_CreateGermlines.d_field = ""
-params.Clone_AIRRseq_First_CreateGermlines.j_field = ""
-params.Clone_AIRRseq_First_CreateGermlines.clone_field = ""
-
-params.Clone_AIRRseq_DefineClones.failed = "false"
-params.Clone_AIRRseq_DefineClones.format = "airr"
-params.Clone_AIRRseq_DefineClones.seq_field = ""
-params.Clone_AIRRseq_DefineClones.v_field = ""
-params.Clone_AIRRseq_DefineClones.d_field = ""
-params.Clone_AIRRseq_DefineClones.j_field = ""
-params.Clone_AIRRseq_DefineClones.group_fields =  ""
-params.Clone_AIRRseq_DefineClones.mode = "gene"
-params.Clone_AIRRseq_DefineClones.dist = "0.2"
-params.Clone_AIRRseq_DefineClones.norm = "len"
-params.Clone_AIRRseq_DefineClones.act = "set"
-params.Clone_AIRRseq_DefineClones.model = "hh_s5f"
-params.Clone_AIRRseq_DefineClones.sym = "min"
-params.Clone_AIRRseq_DefineClones.link = "single"
-params.Clone_AIRRseq_DefineClones.maxmiss = "0"
-
-// Process Parameters for Clone_AIRRseq_Second_CreateGermlines:
-params.Clone_AIRRseq_Second_CreateGermlines.failed = "false"
-params.Clone_AIRRseq_Second_CreateGermlines.format = "airr"
-params.Clone_AIRRseq_Second_CreateGermlines.g = "dmask"
-params.Clone_AIRRseq_Second_CreateGermlines.cloned = "true"
-params.Clone_AIRRseq_Second_CreateGermlines.seq_field = ""
-params.Clone_AIRRseq_Second_CreateGermlines.v_field = ""
-params.Clone_AIRRseq_Second_CreateGermlines.d_field = ""
-params.Clone_AIRRseq_Second_CreateGermlines.j_field = ""
-params.Clone_AIRRseq_Second_CreateGermlines.clone_field = ""
-
 
 // part 5
 

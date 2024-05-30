@@ -914,7 +914,7 @@ input:
  set val(name), file(airrseq_data) from g0_19_outputFileTSV0_g_80
 
 output:
- set val(name), file(outfile)  into g_80_germlineFastaFile0_g21_12, g_80_germlineFastaFile0_g21_9
+ set val(name), file(outfile)  into g_80_germlineFastaFile0_g21_12, g_80_germlineFastaFile0_g21_9, g_80_germlineFastaFile0_g11_12, g_80_germlineFastaFile0_g11_9
 
 script:
 
@@ -1332,6 +1332,7 @@ make_igblast_ndm ${germlineFile} ${chain} ${ndm_file}
 process Second_Alignment_IgBlastn {
 
 input:
+ set val(name),file(fastaFile) from g_80_germlineFastaFile0_g11_9
  file db_v from g11_22_germlineDb0_g11_9
  file db_d from g11_16_germlineDb0_g11_9
  file db_j from g11_17_germlineDb0_g11_9
@@ -1381,6 +1382,7 @@ process Second_Alignment_MakeDb {
 
 publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*_db-fail.tsv$/) "failed_collapse/$filename"}
 input:
+ set val(name),file(fastaFile) from g_80_germlineFastaFile0_g11_12
  set val(name_igblast),file(igblastOut) from g11_9_igblastOut0_g11_12
  set val(name1), file(v_germline_file) from g_70_germlineFastaFile0_g11_12
  set val(name2), file(d_germline_file) from g_3_germlineFastaFile_g11_12

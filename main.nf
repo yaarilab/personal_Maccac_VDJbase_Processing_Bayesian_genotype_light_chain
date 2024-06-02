@@ -387,7 +387,7 @@ input:
  set val(name), file(v_ref) from g_2_germlineFastaFile_g_92
 
 output:
- set val(name), file("new_V*")  into g_92_germlineFastaFile0_g_93, g_92_germlineFastaFile0_g_68, g_92_germlineFastaFile0_g_8, g_92_germlineFastaFile0_g_95, g_92_germlineFastaFile0_g0_22, g_92_germlineFastaFile0_g0_43, g_92_germlineFastaFile0_g0_47, g_92_germlineFastaFile0_g0_12
+ set val(name), file("new_V*")  into g_92_germlineFastaFile0_g_93, g_92_germlineFastaFile0_g_68, g_92_germlineFastaFile0_g_8, g_92_germlineFastaFile0_g_95, g_92_germlineFastaFile0_g_96, g_92_germlineFastaFile0_g0_22, g_92_germlineFastaFile0_g0_43, g_92_germlineFastaFile0_g0_47, g_92_germlineFastaFile0_g0_12
  file "changes.csv" optional true  into g_92_csvFile1_g_96
 
 
@@ -1390,7 +1390,7 @@ input:
 
 output:
  set val(name_igblast),file("*_db-pass.tsv") optional true  into g11_12_outputFileTSV0_g11_43, g11_12_outputFileTSV0_g11_47, g11_12_outputFileTSV0_g_76, g11_12_outputFileTSV0_g_95
- set val("reference_set"), file("${reference_set}") optional true  into g11_12_germlineFastaFile1_g_96
+ set val("reference_set"), file("${reference_set}") optional true  into g11_12_germlineFastaFile11
  set val(name_igblast),file("*_db-fail.tsv") optional true  into g11_12_outputFileTSV22
 
 script:
@@ -1878,7 +1878,7 @@ process change_light_germline_file_and_repertoire_file_names_back {
 
 input:
  file csv from g_92_csvFile1_g_96
- set val(name1), file(germline_file) from g11_12_germlineFastaFile1_g_96
+ set val(name1), file(germline_file) from g_92_germlineFastaFile0_g_96
  set val(name_igblast),file(rep_file) from g_95_outputFileTSV0_g_96
 
 output:

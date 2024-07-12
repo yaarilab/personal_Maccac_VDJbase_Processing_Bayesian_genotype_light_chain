@@ -120,9 +120,117 @@ ch_empty_file_2 = file("$baseDir/.emptyfiles/NO_FILE_2", hidden:true)
 ch_empty_file_3 = file("$baseDir/.emptyfiles/NO_FILE_3", hidden:true)
 
 Channel.fromPath(params.v_germline_file, type: 'any').map{ file -> tuple(file.baseName, file) }.set{g_2_germlineFastaFile_g_92}
-Channel.fromPath(params.d_germline, type: 'any').map{ file -> tuple(file.baseName, file) }.into{g_3_germlineFastaFile_g_75;g_3_germlineFastaFile_g_95;g_3_germlineFastaFile_g0_16;g_3_germlineFastaFile_g0_12;g_3_germlineFastaFile_g11_16;g_3_germlineFastaFile_g11_12}
+Channel.fromPath(params.d_germline, type: 'any').map{ file -> tuple(file.baseName, file) }.set{g_3_germlineFastaFile_g_97}
 Channel.fromPath(params.j_germline, type: 'any').map{ file -> tuple(file.baseName, file) }.set{g_4_germlineFastaFile_g_90}
 Channel.fromPath(params.airr_seq, type: 'any').map{ file -> tuple(file.baseName, file) }.into{g_94_fastaFile_g0_9;g_94_fastaFile_g0_12}
+
+g_3_germlineFastaFile_g_97= g_3_germlineFastaFile_g_97.ifEmpty([""]) 
+
+
+process D_names_fasta {
+
+input:
+ set val(name), file(D_ref) from g_3_germlineFastaFile_g_97
+
+output:
+ set val(name), file("new_D_novel_germline*")  into g_97_germlineFastaFile0_g_75, g_97_germlineFastaFile0_g_95, g_97_germlineFastaFile0_g11_16, g_97_germlineFastaFile0_g11_12, g_97_germlineFastaFile0_g0_16, g_97_germlineFastaFile0_g0_12
+ file "changes.csv" optional true  into g_97_outputFileCSV11
+
+
+script:
+
+readArray_D_ref = D_ref.toString().split(' ')[0]
+
+if(readArray_D_ref.endsWith("fasta")){
+
+"""
+#!/usr/bin/env python3 
+
+import pandas as pd
+from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
+from Bio import SeqIO
+from hashlib import sha256 
+
+
+def fasta_to_dataframe(file_path):
+    data = {'ID': [], 'Sequence': []}
+    with open(file_path, 'r') as file:
+        for record in SeqIO.parse(file, 'fasta'):
+            data['ID'].append(record.id)
+            data['Sequence'].append(str(record.seq))
+
+        df = pd.DataFrame(data)
+        return df
+
+
+file_path = '${readArray_D_ref}'  # Replace with the actual path
+df = fasta_to_dataframe(file_path)
+
+
+index_counter = 30  # Start index
+
+for index, row in df.iterrows():
+    if '_' in row['ID']:
+        print(row['ID'])
+        parts = row['ID'].split('*')
+        row['ID'] = f"{parts[0]}*{index_counter}"
+        # df.at[index, 'ID'] = row['ID']  # Update DataFrame with the new value
+        index_counter += 1
+        
+        
+        
+def dataframe_to_fasta(df, output_file, description_column='Description', default_description=''):
+    records = []
+
+    for index, row in df.iterrows():
+        sequence_record = SeqRecord(Seq(row['Sequence']), id=row['ID'])
+
+        # Use the description from the DataFrame if available, otherwise use the default
+        description = row.get(description_column, default_description)
+        sequence_record.description = description
+
+        records.append(sequence_record)
+
+    with open(output_file, 'w') as output_handle:
+        SeqIO.write(records, output_handle, 'fasta')
+
+def save_changes_to_csv(old_df, new_df, output_file):
+    changes = []
+    for index, (old_row, new_row) in enumerate(zip(old_df.itertuples(), new_df.itertuples()), 1):
+        if old_row.ID != new_row.ID:
+            changes.append({'Row': index, 'Old_ID': old_row.ID, 'New_ID': new_row.ID})
+    
+    changes_df = pd.DataFrame(changes)
+    if not changes_df.empty:
+        changes_df.to_csv(output_file, index=False)
+        
+output_file_path = 'new_D_novel_germline.fasta'
+
+dataframe_to_fasta(df, output_file_path)
+
+
+file_path = '${readArray_D_ref}'  # Replace with the actual path
+old_df = fasta_to_dataframe(file_path)
+
+output_csv_file = "changes.csv"
+save_changes_to_csv(old_df, df, output_csv_file)
+
+"""
+} else{
+	
+"""
+#!/usr/bin/env python3 
+	
+
+file_path = 'new_D_novel_germline.txt'
+
+with open(file_path, 'w'):
+    pass
+    
+"""    
+}    
+}
 
 g_4_germlineFastaFile_g_90= g_4_germlineFastaFile_g_90.ifEmpty([""]) 
 
@@ -251,7 +359,7 @@ annotate_j ${germlineFile} ${aux_file}
 process Second_Alignment_D_MakeBlastDb {
 
 input:
- set val(db_name), file(germlineFile) from g_3_germlineFastaFile_g11_16
+ set val(db_name), file(germlineFile) from g_97_germlineFastaFile0_g11_16
 
 output:
  file "${db_name}"  into g11_16_germlineDb0_g11_9
@@ -301,7 +409,7 @@ if(germlineFile.getName().endsWith("fasta")){
 process First_Alignment_D_MakeBlastDb {
 
 input:
- set val(db_name), file(germlineFile) from g_3_germlineFastaFile_g0_16
+ set val(db_name), file(germlineFile) from g_97_germlineFastaFile0_g0_16
 
 output:
  file "${db_name}"  into g0_16_germlineDb0_g0_9
@@ -559,7 +667,7 @@ input:
  set val(name),file(fastaFile) from g_94_fastaFile_g0_12
  set val(name_igblast),file(igblastOut) from g0_9_igblastOut0_g0_12
  set val(name1), file(v_germline_file) from g_92_germlineFastaFile0_g0_12
- set val(name2), file(d_germline_file) from g_3_germlineFastaFile_g0_12
+ set val(name2), file(d_germline_file) from g_97_germlineFastaFile0_g0_12
  set val(name3), file(j_germline_file) from g_90_germlineFastaFile0_g0_12
 
 output:
@@ -1352,7 +1460,7 @@ input:
  set val(name),file(fastaFile) from g_80_germlineFastaFile0_g11_12
  set val(name_igblast),file(igblastOut) from g11_9_igblastOut0_g11_12
  set val(name1), file(v_germline_file) from g_70_germlineFastaFile0_g11_12
- set val(name2), file(d_germline_file) from g_3_germlineFastaFile_g11_12
+ set val(name2), file(d_germline_file) from g_97_germlineFastaFile0_g11_12
  set val(name3), file(j_germline_file) from g_90_germlineFastaFile0_g11_12
 
 output:
@@ -1780,7 +1888,7 @@ rmarkdown::render("${rmk}", clean=TRUE, output_format="html_document", output_di
 }
 
 g_92_germlineFastaFile0_g_95= g_92_germlineFastaFile0_g_95.ifEmpty([""]) 
-g_3_germlineFastaFile_g_95= g_3_germlineFastaFile_g_95.ifEmpty([""]) 
+g_97_germlineFastaFile0_g_95= g_97_germlineFastaFile0_g_95.ifEmpty([""]) 
 g_90_germlineFastaFile0_g_95= g_90_germlineFastaFile0_g_95.ifEmpty([""]) 
 
 
@@ -1789,7 +1897,7 @@ process CreateGermlines {
 input:
  set val(name),file(airrFile) from g11_12_outputFileTSV0_g_95
  set val(name1), file(v_germline_file) from g_92_germlineFastaFile0_g_95
- set val(name2), file(d_germline_file) from g_3_germlineFastaFile_g_95
+ set val(name2), file(d_germline_file) from g_97_germlineFastaFile0_g_95
  set val(name3), file(j_germline_file) from g_90_germlineFastaFile0_g_95
 
 output:
@@ -1945,7 +2053,7 @@ process TIgGER_bayesian_genotype_Inference_d_call {
 publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /${call}_genotype_report.tsv$/) "genotype_report/$filename"}
 input:
  set val(name),file(airrFile) from g_83_outputFileTSV0_g_75
- set val(name1), file(germline_file) from g_3_germlineFastaFile_g_75
+ set val(name1), file(germline_file) from g_97_germlineFastaFile0_g_75
 
 output:
  set val("${call}_genotype"),file("${call}_genotype_report.tsv") optional true  into g_75_outputFileTSV00

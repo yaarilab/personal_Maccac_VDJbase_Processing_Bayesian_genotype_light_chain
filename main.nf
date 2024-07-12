@@ -267,7 +267,7 @@ input:
  set val(db_name), file(germlineFile) from g_90_germlineFastaFile0_g_91
 
 output:
- file aux_file  into g_91_outputFileTxt0_g0_9, g_91_outputFileTxt0_g11_9, g_91_outputFileTxt0_g21_9
+ file aux_file  into g_91_outputFileTxt0_g0_9, g_91_outputFileTxt0_g11_9
 
 script:
 
@@ -914,7 +914,7 @@ input:
  set val(name), file(airrseq_data) from g0_19_outputFileTSV0_g_80
 
 output:
- set val(name), file(outfile)  into g_80_germlineFastaFile0_g21_12, g_80_germlineFastaFile0_g21_9, g_80_germlineFastaFile0_g11_12, g_80_germlineFastaFile0_g11_9
+ set val(name), file(outfile)  into g_80_germlineFastaFile0_g11_12, g_80_germlineFastaFile0_g11_9
 
 script:
 
@@ -980,7 +980,7 @@ germline_file_path=\$(realpath ${germline_file})
 novel=""
 
 if grep -q "_[A-Z][0-9]" ${v_germline_file}; then
-	grep -A 6 "_[A-Z][0-9]" ${v_germline_file} > novel_sequences.fasta
+	awk '/^>/{f=0} \$0 ~ /_[A-Z][0-9]/ {f=1} f' ${v_germline_file} > novel_sequences.fasta
 	novel=\$(realpath novel_sequences.fasta)
 	diff \$germline_file_path \$novel | grep '^<' | sed 's/^< //' > personal_germline.fasta
 	germline_file_path=\$(realpath personal_germline.fasta)
@@ -1389,7 +1389,7 @@ input:
  set val(name3), file(j_germline_file) from g_90_germlineFastaFile0_g11_12
 
 output:
- set val(name_igblast),file("*_db-pass.tsv") optional true  into g11_12_outputFileTSV0_g11_43, g11_12_outputFileTSV0_g11_47, g11_12_outputFileTSV0_g_76, g11_12_outputFileTSV0_g_95
+ set val(name_igblast),file("*_db-pass.tsv") optional true  into g11_12_outputFileTSV0_g11_43, g11_12_outputFileTSV0_g11_47, g11_12_outputFileTSV0_g_95
  set val("reference_set"), file("${reference_set}") optional true  into g11_12_germlineFastaFile11
  set val(name_igblast),file("*_db-fail.tsv") optional true  into g11_12_outputFileTSV22
 
@@ -1939,15 +1939,15 @@ if (file.exists("changes.csv")) {
 
 process take_only_none_v_mut {
 
-publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*_no_mut.tsv.*$/) "rearrangements/$filename"}
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*_fillter.tsv.*$/) "rearrangements/$filename"}
 input:
  set val(name),file(airrFile) from g_96_outputFileTSV1_g_83
 
 output:
- set val(outname),file("*_no_mut.tsv*")  into g_83_outputFileTSV0_g_29, g_83_outputFileTSV0_g_31, g_83_outputFileTSV0_g_75
+ set val(outname),file("*_fillter.tsv*")  into g_83_outputFileTSV0_g_29, g_83_outputFileTSV0_g_31, g_83_outputFileTSV0_g_75
 
 script:
-outname = airrFile.toString() - '.tsv' +"_no_mut"
+outname = airrFile.toString() - '.tsv' +"_fillter"
 outfile = outname + ".tsv"
 
 """
@@ -1981,8 +1981,8 @@ input:
  set val(name1), file(germline_file) from g_3_germlineFastaFile_g_75
 
 output:
- set val("${call}_genotype"),file("${call}_genotype_report.tsv") optional true  into g_75_outputFileTSV0_g_76
- set val("${call}_personal_reference"), file("${call}_personal_reference.fasta") optional true  into g_75_germlineFastaFile1_g21_16, g_75_germlineFastaFile1_g21_12
+ set val("${call}_genotype"),file("${call}_genotype_report.tsv") optional true  into g_75_outputFileTSV00
+ set val("${call}_personal_reference"), file("${call}_personal_reference.fasta") optional true  into g_75_germlineFastaFile11
  set val("fake"),file("fake*") optional true  into g_75_outputFileTSV22
 
 script:
@@ -2095,31 +2095,6 @@ if (params.heavy_chain == "yes"){
 }
 
 
-process Third_Alignment_D_MakeBlastDb {
-
-input:
- set val(db_name), file(germlineFile) from g_75_germlineFastaFile1_g21_16
-
-output:
- file "${db_name}"  into g21_16_germlineDb0_g21_9
-
-script:
-
-if(germlineFile.getName().endsWith("fasta")){
-	"""
-	sed -e '/^>/! s/[.]//g' ${germlineFile} > tmp_germline.fasta
-	mkdir -m777 ${db_name}
-	makeblastdb -parse_seqids -dbtype nucl -in tmp_germline.fasta -out ${db_name}/${db_name}
-	"""
-}else{
-	"""
-	echo something if off
-	"""
-}
-
-}
-
-
 process TIgGER_bayesian_genotype_Inference_j_call {
 
 publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /${call}_genotype_report.tsv$/) "genotype_report/$filename"}
@@ -2128,8 +2103,8 @@ input:
  set val(name1), file(germline_file) from g_90_germlineFastaFile0_g_31
 
 output:
- set val("${call}_genotype"),file("${call}_genotype_report.tsv")  into g_31_outputFileTSV0_g_76
- set val("${call}_personal_reference"), file("${call}_personal_reference.fasta")  into g_31_germlineFastaFile1_g21_17, g_31_germlineFastaFile1_g21_12
+ set val("${call}_genotype"),file("${call}_genotype_report.tsv")  into g_31_outputFileTSV00
+ set val("${call}_personal_reference"), file("${call}_personal_reference.fasta")  into g_31_germlineFastaFile11
 
 script:
 
@@ -2215,31 +2190,6 @@ writeFasta(germline_db_new, file = paste0("${call}","_personal_reference.fasta")
 }
 
 
-process Third_Alignment_J_MakeBlastDb {
-
-input:
- set val(db_name), file(germlineFile) from g_31_germlineFastaFile1_g21_17
-
-output:
- file "${db_name}"  into g21_17_germlineDb0_g21_9
-
-script:
-
-if(germlineFile.getName().endsWith("fasta")){
-	"""
-	sed -e '/^>/! s/[.]//g' ${germlineFile} > tmp_germline.fasta
-	mkdir -m777 ${db_name}
-	makeblastdb -parse_seqids -dbtype nucl -in tmp_germline.fasta -out ${db_name}/${db_name}
-	"""
-}else{
-	"""
-	echo something if off
-	"""
-}
-
-}
-
-
 process TIgGER_bayesian_genotype_Inference_v_call {
 
 publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /${call}_genotype_report.tsv$/) "genotype_report/$filename"}
@@ -2249,8 +2199,8 @@ input:
  set val(name1), file(germline_file) from g_96_germlineFastaFile0_g_29
 
 output:
- set val("${call}_genotype"),file("${call}_genotype_report.tsv")  into g_29_outputFileTSV0_g_76
- set val("${call}_personal_reference"), file("${call}_personal_reference.fasta")  into g_29_germlineFastaFile1_g_79, g_29_germlineFastaFile1_g_37, g_29_germlineFastaFile1_g21_22, g_29_germlineFastaFile1_g21_12, g_29_germlineFastaFile1_g21_43, g_29_germlineFastaFile1_g21_47
+ set val("${call}_genotype"),file("${call}_genotype_report.tsv")  into g_29_outputFileTSV00
+ set val("${call}_personal_reference"), file("${call}_personal_reference.fasta")  into g_29_germlineFastaFile11
 
 script:
 
@@ -2333,742 +2283,6 @@ writeFasta(germline_db_new, file = paste0("${call}","_personal_reference.fasta")
 
 """
 
-}
-
-
-process make_igblast_ndm_third_alignment {
-
-input:
- set val(db_name), file(germlineFile) from g_29_germlineFastaFile1_g_79
-
-output:
- file ndm_file  into g_79_outputFileTxt0_g21_9
-
-script:
-
-ndm_chain = params.make_igblast_ndm_third_alignment.ndm_chain
-
-chains = [IGH: 'VH', IGK: 'VK', IGL: 'VL', TRA: 'VA', TRB: 'VB', TRD: 'VD', TRG: 'VG']
-
-chain = chains[ndm_chain]
-
-ndm_file = db_name+".ndm"
-
-"""
-make_igblast_ndm ${germlineFile} ${chain} ${ndm_file}
-"""
-
-}
-
-
-process Third_Alignment_V_MakeBlastDb {
-
-input:
- set val(db_name), file(germlineFile) from g_29_germlineFastaFile1_g21_22
-
-output:
- file "${db_name}"  into g21_22_germlineDb0_g21_9
-
-script:
-
-if(germlineFile.getName().endsWith("fasta")){
-	"""
-	sed -e '/^>/! s/[.]//g' ${germlineFile} > tmp_germline.fasta
-	mkdir -m777 ${db_name}
-	makeblastdb -parse_seqids -dbtype nucl -in tmp_germline.fasta -out ${db_name}/${db_name}
-	"""
-}else{
-	"""
-	echo something if off
-	"""
-}
-
-}
-
-
-process Third_Alignment_IgBlastn {
-
-input:
- set val(name),file(fastaFile) from g_80_germlineFastaFile0_g21_9
- file db_v from g21_22_germlineDb0_g21_9
- file db_d from g21_16_germlineDb0_g21_9
- file db_j from g21_17_germlineDb0_g21_9
- file auxiliary_data from g_91_outputFileTxt0_g21_9
- file custom_internal_data from g_79_outputFileTxt0_g21_9
-
-output:
- set val(name), file("${outfile}") optional true  into g21_9_igblastOut0_g21_12
-
-script:
-num_threads = params.Third_Alignment_IgBlastn.num_threads
-ig_seqtype = params.Third_Alignment_IgBlastn.ig_seqtype
-outfmt = params.Third_Alignment_IgBlastn.outfmt
-num_alignments_V = params.Third_Alignment_IgBlastn.num_alignments_V
-domain_system = params.Third_Alignment_IgBlastn.domain_system
-
-randomString = org.apache.commons.lang.RandomStringUtils.random(9, true, true)
-outname = name + "_" + randomString
-outfile = (outfmt=="MakeDb") ? name+"_"+randomString+".out" : name+"_"+randomString+".tsv"
-outfmt = (outfmt=="MakeDb") ? "'7 std qseq sseq btop'" : "19"
-
-if(db_v.toString()!="" && db_d.toString()!="" && db_j.toString()!=""){
-	"""
-	export IGDATA=/usr/local/share/igblast
-	
-	igblastn -query ${fastaFile} \
-		-germline_db_V ${db_v}/${db_v} \
-		-germline_db_D ${db_d}/${db_d} \
-		-germline_db_J ${db_j}/${db_j} \
-		-num_alignments_V ${num_alignments_V} \
-		-domain_system imgt \
-		-auxiliary_data ${auxiliary_data} \
-		-custom_internal_data ${custom_internal_data} \
-		-outfmt ${outfmt} \
-		-num_threads ${num_threads} \
-		-out ${outfile}
-	"""
-}else{
-	"""
-	"""
-}
-
-}
-
-
-process Third_Alignment_MakeDb {
-
-publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*_db-pass.tsv$/) "rearrangements/$filename"}
-input:
- set val(name),file(fastaFile) from g_80_germlineFastaFile0_g21_12
- set val(name_igblast),file(igblastOut) from g21_9_igblastOut0_g21_12
- set val(name1), file(v_germline_file) from g_29_germlineFastaFile1_g21_12
- set val(name2), file(d_germline_file) from g_75_germlineFastaFile1_g21_12
- set val(name3), file(j_germline_file) from g_31_germlineFastaFile1_g21_12
-
-output:
- set val(name_igblast),file("*_db-pass.tsv") optional true  into g21_12_outputFileTSV0_g21_43, g21_12_outputFileTSV0_g21_47, g21_12_outputFileTSV0_g_76, g21_12_outputFileTSV0_g_37
- set val("reference_set"), file("${reference_set}") optional true  into g21_12_germlineFastaFile1_g_37
- set val(name_igblast),file("*_db-fail.tsv") optional true  into g21_12_outputFileTSV22
-
-script:
-
-failed = params.Third_Alignment_MakeDb.failed
-format = params.Third_Alignment_MakeDb.format
-regions = params.Third_Alignment_MakeDb.regions
-extended = params.Third_Alignment_MakeDb.extended
-asisid = params.Third_Alignment_MakeDb.asisid
-asiscalls = params.Third_Alignment_MakeDb.asiscalls
-inferjunction = params.Third_Alignment_MakeDb.inferjunction
-partial = params.Third_Alignment_MakeDb.partial
-name_alignment = params.Third_Alignment_MakeDb.name_alignment
-
-failed = (failed=="true") ? "--failed" : ""
-format = (format=="changeo") ? "--format changeo" : ""
-extended = (extended=="true") ? "--extended" : ""
-regions = (regions=="rhesus-igl") ? "--regions rhesus-igl" : ""
-asisid = (asisid=="true") ? "--asis-id" : ""
-asiscalls = (asiscalls=="true") ? "--asis-calls" : ""
-inferjunction = (inferjunction=="true") ? "--infer-junction" : ""
-partial = (partial=="true") ? "--partial" : ""
-
-reference_set = "reference_set_makedb_"+name_alignment+".fasta"
-
-outname = name_igblast+'_'+name_alignment
-
-if(igblastOut.getName().endsWith(".out")){
-	"""
-	
-	cat ${v_germline_file} ${d_germline_file} ${j_germline_file} > ${reference_set}
-	
-	MakeDb.py igblast \
-		-s ${fastaFile} \
-		-i ${igblastOut} \
-		-r ${v_germline_file} ${d_germline_file} ${j_germline_file} \
-		--log MD_${name}.log \
-		--outname ${outname}\
-		${extended} \
-		${failed} \
-		${format} \
-		${regions} \
-		${asisid} \
-		${asiscalls} \
-		${inferjunction} \
-		${partial}
-	"""
-}else{
-	"""
-	
-	"""
-}
-
-}
-
-
-process Third_Alignment_after_make_db_report {
-
-input:
- set val(name), file(makeDb_pass) from g21_12_outputFileTSV0_g21_43
- set val(name2), file(v_ref) from g_29_germlineFastaFile1_g21_43
-
-output:
- file "*.rmd"  into g21_43_rMarkdown0_g21_47
-
-shell:
-
-readArray_makeDb_pass = makeDb_pass.toString().split(' ')[0]
-readArray_v_ref = v_ref.toString().split(' ')[0]
-
-'''
-#!/usr/bin/env perl
-
-
-my $script = <<'EOF';
-
-
-```{r echo=FALSE,message = FALSE}
-library(ggplot2)
-library(rlang)
-library(alakazam)
-library(dplyr)
-library(stringi)
-
-
-df <-read.delim("!{readArray_makeDb_pass}", sep="\t")
-
-df[["v_gene"]] <- getGene(df[["v_call"]], first = F, collapse = TRUE, strip_d = FALSE)
-
-df[["v_family"]] <- getFamily(df[["v_call"]], first = F, collapse = TRUE, strip_d = FALSE)
-
-df_filter <- df %>% filter(!grepl(",", v_call))
-
-
-df[,"start_v"] <- stringi::stri_locate_first(str = df[,"sequence_alignment"], regex="[ATCG]")[,1]
-df_filter[,"start_v"] <-  stringi::stri_locate_first(str = df_filter[,"sequence_alignment"], regex="[ATCG]")[,1]
-
-df[,"count_N"] <- stringi::stri_count_fixed(str = df[,"sequence_alignment"],"N")
-df_filter[,"count_N"] <- stringi::stri_count_fixed(str = df_filter[,"sequence_alignment"],"N")
-
-
-```
-
-
-
-### all reads
-
-```{r echo=FALSE,message = FALSE,warnings =FALSE,fig.width=15,fig.height=10}
-
-df[,"start_v"] <- stringi::stri_locate_first(str = df[,"sequence_alignment"], regex="[ATCG]")[,1]
-
-ggplot(df, aes(start_v)) + stat_ecdf() +
-  scale_x_continuous(breaks = seq(0, max(df[["start_v"]]), by = 10),
-                     labels = seq(0, max(df[["start_v"]]), by = 10)) +
-  scale_y_continuous(breaks = seq(0, 1, by = 0.1),
-					labels = seq(0, 1, by = 0.1)) +
-  theme(axis.text.x = element_text(size = 12),
-        axis.ticks.x = element_line(size = 2),
-        axis.ticks.y = element_line(size = 2))
-
-```
-
-
-### single assignment 
-
-```{r echo=FALSE,message = FALSE,warnings =FALSE,fig.width=15,fig.height=10}
-
-df_filter <- df %>% filter(!grepl(",", v_call))
-
-
-df_filter[,"start_v"] <-  stringi::stri_locate_first(str = df_filter[,"sequence_alignment"], regex="[ATCG]")[,1]
-
-ggplot(df_filter, aes(start_v)) + stat_ecdf()+
-  scale_x_continuous(breaks = seq(0, max(df_filter[["start_v"]]), by = 10),
-                     labels = seq(0, max(df_filter[["start_v"]]), by = 10)) +
-  scale_y_continuous(breaks = seq(0, 1, by = 0.1),
-				  	 labels = seq(0, 1, by = 0.1)) +
-  theme(axis.text.x = element_text(size = 12),
-        axis.ticks.x = element_line(size = 2))
-
-```
-
-### by gene 
-
-```{r echo=FALSE,message = FALSE,warnings =FALSE,fig.width=70,fig.height=170}
-
-ggplot(df_filter, aes(start_v, colour = as.factor(v_gene))) +
-  stat_ecdf() +
-    scale_x_continuous(breaks = seq(0, max(df_filter[["start_v"]]), by = 10),
-                labels = seq(0, max(df_filter[["start_v"]]), by = 10)) +
-  scale_y_continuous(breaks = seq(0, 1, by = 0.1),
-				  	 labels = seq(0, 1, by = 0.1)) +
-  theme(axis.text.x = element_text(size = 50),
-        axis.ticks.x = element_line(size = 2),
-        axis.text.y = element_text(size = 50),
-        axis.ticks.y = element_line(size = 2),
-        strip.text = element_text(size = 50)) +
-    facet_wrap(~ v_family, scales = "free", ncol = 1) +
-    theme(legend.position = "bottom",
-            legend.key.size  = unit(2, "cm"),
-            legend.title=element_text(size=50),
-            legend.text =element_text(size=50))
-```
-
-## V identity
-
-### all reads
-
-```{r echo=FALSE,message = FALSE,warnings =FALSE,fig.width=15,fig.height=8}
-
-# Assuming df is your data frame
-ggplot(df, aes(x = v_identity)) +
-  geom_histogram(binwidth = 0.01, 
-                 fill = "blue", color = "black", alpha = 0.7) +
-  stat_density(geom = "line", color = "red", size = 1) +
-  labs(title = "Histogram with Density Line of v_identity", x = "v_identity", y = "Frequency")
-
-```
-
-### single assignment 
-
-```{r echo=FALSE,message = FALSE,warnings =FALSE,fig.width=15,fig.height=8}
-
-# Assuming df is your data frame
-ggplot(df_filter, aes(x = v_identity)) +
-  geom_histogram(binwidth = 0.01, 
-                 fill = "blue", color = "black", alpha = 0.7) +
-  stat_density(geom = "line", color = "red", size = 1) +
-  labs(title = "Histogram with Density Line of v_identity", x = "v_identity", y = "Frequency")
-
-```
-
-
-
-## N count
-
-
-### all reads
-
-```{r echo=FALSE,message = FALSE,warnings =FALSE,fig.width=15,fig.height=10}
-max_length <- max(nchar(df[,"sequence_alignment"]))
-sequences_padded <- stri_pad_right(df[,"sequence_alignment"], width = max_length, pad = "_")
-sequence_chars <- stri_split_regex(sequences_padded, "(?!^)(?=.{1})", simplify = TRUE)
-position_counts <- colSums(sequence_chars == "N")
-
-data_df <- data.frame(Position = 1:length(position_counts), Count = position_counts)
-
-ggplot(data_df, aes(x = Position, y = Count)) +
-  geom_bar(stat = "identity", fill = "blue") +
-  labs(x = "Position in Sequence",
-       y = "Number of Sequences with N",
-       title = "Histogram of Sequences with N at Each Position")
-
-```
-
-```{r echo=FALSE,message = FALSE,warnings =FALSE,fig.width=15,fig.height=10}
-cat("hist of N_count in each seq - without 0 N", "\n")
-x<-sum(df[,"count_N"]==0)
-cat("There is ",x, " with 0 N","\n")
-
-df_filtered <- df %>%
-filter(count_N > 0)
-
-# Create the bar plot
-ggplot(df_filtered, aes(x = as.factor(count_N))) +
-geom_bar(stat = "count") +
-labs(title = "Bar Plot for Each Value", x = "Value", y = "Count")
-
-```
-
-
-### single assignment 
-
-```{r echo=FALSE,message = FALSE,warnings =FALSE,fig.width=15,fig.height=10}
-max_length <- max(nchar(df_filter[,"sequence_alignment"]))
-sequences_padded <- stri_pad_right(df_filter[,"sequence_alignment"], width = max_length, pad = "_")
-sequence_chars <- stri_split_regex(sequences_padded, "(?!^)(?=.{1})", simplify = TRUE)
-position_counts <- colSums(sequence_chars == "N")
-
-data_df <- data.frame(Position = 1:length(position_counts), Count = position_counts)
-
-ggplot(data_df, aes(x = Position, y = Count)) +
-  geom_bar(stat = "identity", fill = "blue") +
-  labs(x = "Position in sequence alignment",
-       y = "Number of Sequences with N",
-       title = "N count at Each Position of sequence alignment")
-
-
-```
-
-
-```{r echo=FALSE,message = FALSE,warnings =FALSE,fig.width=15,fig.height=10}
-cat("Histogaram of N count in each sequence alignment  - without 0 N", "\n")
-x<-sum(df_filter[,"count_N"]==0)
-cat("There is ",x, " with 0 N","\n")
-
-df_filtered <- df_filter %>%
-filter(count_N > 0)
-ggplot(df_filtered, aes(x = as.factor(count_N))) +
-geom_bar(stat = "count") +
-labs(title = "Bar Plot for Each Value", x = "Value", y = "Count")
-
-```
-
-
-## Functionality
-
-### all reads
-
-```{r echo=FALSE,message = FALSE,warnings =FALSE,fig.width=10,fig.height=7}
-
-
-library(gridExtra)
-
-df_plot <- data.frame(table(df[,"productive"]))
-colnames(df_plot) <- c("productive", "count")
-df_plot[,"percentage"] <- df_plot[,"count"] / sum(df_plot[,"count"]) * 100
-
-# Create a ggplot pie chart
-p1 <- ggplot(df_plot, aes(x = "", y = percentage, fill = productive)) +
-  geom_bar(stat = "identity", width = 1, color = "white") +
-  coord_polar(theta = "y") +
-  theme_void() +
-  ggtitle("Productive") +
-  geom_text(aes(label = sprintf("%s\n%.1f%%", productive, percentage)),
-            position = position_stack(vjust = 0.5))
-
-df_plot <- data.frame(table(nchar(df[,"sequence"])%%3 == 0))
-colnames(df_plot) <- c("productive", "count")
-df_plot[,"percentage"] <- df_plot[,"count"] / sum(df_plot[,"count"]) * 100
-
-# Create a ggplot pie chart
-p2 <- ggplot(df_plot, aes(x = "", y = percentage, fill = productive)) +
-  geom_bar(stat = "identity", width = 1, color = "white") +
-  coord_polar(theta = "y") +
-  theme_void() +
-  ggtitle("sequence length divisible by 3") +
-  geom_text(aes(label = sprintf("%s\n%.1f%%", productive, percentage)),
-            position = position_stack(vjust = 0.5))
-
-df_plot <- data.frame(table(nchar(df[,"junction"])%%3 == 0))
-colnames(df_plot) <- c("productive", "count")
-df_plot[,"percentage"] <- df_plot[,"count"] / sum(df_plot[,"count"]) * 100
-
-# Create a ggplot pie chart
-p3 <- ggplot(df_plot, aes(x = "", y = percentage, fill = productive)) +
-  geom_bar(stat = "identity", width = 1, color = "white") +
-  coord_polar(theta = "y") +
-  theme_void() +
-  ggtitle("junction length divisible by 3") +
-  geom_text(aes(label = sprintf("%s\n%.1f%%", productive, percentage)),
-            position = position_stack(vjust = 0.5))
-
-
-grid.arrange(p1, p2,p3 ,ncol = 3)
-```
-
-### single assignment 
-
-```{r echo=FALSE,message = FALSE,warnings =FALSE,fig.width=10,fig.height=7}
-
-library(gridExtra)
-
-df_plot <- data.frame(table(df_filter[,"productive"]))
-colnames(df_plot) <- c("productive", "count")
-df_plot[,"percentage"] <- df_plot[,"count"] / sum(df_plot[,"count"]) * 100
-
-# Create a ggplot pie chart
-p1 <- ggplot(df_plot, aes(x = "", y = percentage, fill = productive)) +
-  geom_bar(stat = "identity", width = 1, color = "white") +
-  coord_polar(theta = "y") +
-  theme_void() +
-  ggtitle("Productive") +
-  geom_text(aes(label = sprintf("%s\n%.1f%%", productive, percentage)),
-            position = position_stack(vjust = 0.5))
-
-df_plot <- data.frame(table(nchar(df_filter[,"sequence"])%%3 == 0))
-colnames(df_plot) <- c("productive", "count")
-df_plot[,"percentage"] <- df_plot[,"count"] / sum(df_plot[,"count"]) * 100
-
-# Create a ggplot pie chart
-p2 <- ggplot(df_plot, aes(x = "", y = percentage, fill = productive)) +
-  geom_bar(stat = "identity", width = 1, color = "white") +
-  coord_polar(theta = "y") +
-  theme_void() +
-  ggtitle("sequence length divisible by 3") +
-  geom_text(aes(label = sprintf("%s\n%.1f%%", productive, percentage)),
-            position = position_stack(vjust = 0.5))
-
-df_plot <- data.frame(table(nchar(df_filter[,"junction"])%%3 == 0))
-colnames(df_plot) <- c("productive", "count")
-df_plot[,"percentage"] <- df_plot[,"count"] / sum(df_plot[,"count"]) * 100
-
-# Create a ggplot pie chart
-p3 <- ggplot(df_plot, aes(x = "", y = percentage, fill = productive)) +
-  geom_bar(stat = "identity", width = 1, color = "white") +
-  coord_polar(theta = "y") +
-  theme_void() +
-  ggtitle("junction length divisible by 3") +
-  geom_text(aes(label = sprintf("%s\n%.1f%%", productive, percentage)),
-            position = position_stack(vjust = 0.5))
-
-
-grid.arrange(p1, p2,p3 ,ncol=3)
-```
-
-## Percentage of alleles for each gene
-
-```{r echo=FALSE,message = FALSE,warnings =FALSE,fig.width=35,fig.height=150}
-df_filter %>%
-  filter(!grepl(",", v_call)) %>%
-  group_by(v_gene) %>%
-  mutate(n_read = n()) %>%
-  group_by(v_gene, v_call) %>%
-  summarise(n_read=n_read,n_calls = n()) %>%
-  distinct(v_gene, v_call, .keep_all = TRUE) %>%
-  summarise(n_read=n_read,n_calls = n_calls, p_calls = n_calls / n_read * 100) %>%
-  arrange(v_gene, desc(p_calls)) %>%
-  ggplot(aes(x = reorder(v_call, p_calls), y = p_calls)) + # Modified aes() function
-  geom_col() + 
-  theme_bw() +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 0.5,size = 15),
-        axis.ticks.x = element_line(size = 2),
-        axis.text.y = element_text(size = 20),
-        axis.ticks.y = element_line(size = 2),
-        strip.text = element_text(size = 20))+
-  facet_wrap(.~v_gene, ncol = 4, scales = "free")
-  
-```
-
-EOF
-	
-open OUT, ">after_make_db_report_!{name}.rmd";
-print OUT $script;
-close OUT;
-
-'''
-
-}
-
-
-process Third_Alignment_render_after_make_db_report {
-
-input:
- file rmk from g21_43_rMarkdown0_g21_47
- set val(name4), file(v_ref) from g_29_germlineFastaFile1_g21_47
- set val(name), file(makeDb_pass) from g21_12_outputFileTSV0_g21_47
-
-output:
- file "*.html"  into g21_47_outputFileHTML00
- file "*csv" optional true  into g21_47_csvFile11
-
-"""
-
-#!/usr/bin/env Rscript 
-
-rmarkdown::render("${rmk}", clean=TRUE, output_format="html_document", output_dir=".")
-
-"""
-}
-
-
-process ogrdbstats_report {
-
-publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*pdf$/) "ogrdbstats_third_alignment/$filename"}
-publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*csv$/) "ogrdbstats_third_alignment/$filename"}
-input:
- set val(name),file(airrFile) from g21_12_outputFileTSV0_g_37
- set val(name1), file(germline_file) from g21_12_germlineFastaFile1_g_37
- set val(name2), file(v_germline_file) from g_29_germlineFastaFile1_g_37
-
-output:
- file "*pdf"  into g_37_outputFilePdf00
- file "*csv"  into g_37_outputFileCSV11
-
-script:
-
-// general params
-chain = params.ogrdbstats_report.chain
-outname = airrFile.name.toString().substring(0, airrFile.name.toString().indexOf("_db-pass"))
-
-"""
-
-germline_file_path=\$(realpath ${germline_file})
-
-novel=""
-
-if grep -q "_[A-Z][0-9]" ${v_germline_file}; then
-	grep -A 6 "_[A-Z][0-9]" ${v_germline_file} > novel_sequences.fasta
-	novel=\$(realpath novel_sequences.fasta)
-	diff \$germline_file_path \$novel | grep '^<' | sed 's/^< //' > personal_germline.fasta
-	germline_file_path=\$(realpath personal_germline.fasta)
-	novel="--inf_file \$novel"
-fi
-
-IFS='\t' read -a var < ${airrFile}
-
-airrfile=${airrFile}
-
-if [[ ! "\${var[*]}" =~ "v_call_genotyped" ]]; then
-    awk -F'\t' '{col=\$5;gsub("call", "call_genotyped", col); print \$0 "\t" col}' ${airrFile} > ${outname}_genotyped.tsv
-    airrfile=${outname}_genotyped.tsv
-fi
-
-airrFile_path=\$(realpath \$airrfile)
-
-
-run_ogrdbstats \
-	\$germline_file_path \
-	"Homosapiens" \
-	\$airrFile_path \
-	${chain} \
-	\$novel 
-
-"""
-
-}
-
-g_75_outputFileTSV0_g_76= g_75_outputFileTSV0_g_76.ifEmpty([""]) 
-
-def defaultIfInexistent(varName){
-    try{
-    	println binding.hasVariable(varName)
-        varName.toString()
-        println varName()
-        return varName
-    }catch(ex){
-        return "check"//file("$baseDir/.emptyfiles/NO_FILE_1", hidden:true)
-    }
-}
-
-def bindingVar(varName) {
-    def optVar = binding.hasVariable(varName)//binding.variables.get(varName)
-    println optVar
-    if(optVar) {
-    	println "pass"
-        println optVar
-        //will only run for global var
-    }
-    println "fail"
-    optVar
-}
-process VDJbase_genotype_report {
-
-publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /${outname}_genotype.tsv$/) "genotype_report/$filename"}
-input:
- set val(name1),file(initial_run) from g11_12_outputFileTSV0_g_76
- set val(name2),file(personal_run) from g21_12_outputFileTSV0_g_76
- set val(name3),file(v_genotype) from g_29_outputFileTSV0_g_76
- set val(name4),file(d_genotype) from g_75_outputFileTSV0_g_76
- set val(name5),file(j_genotype) from g_31_outputFileTSV0_g_76
-
-output:
- set val(outname),file("${outname}_genotype.tsv") optional true  into g_76_outputFileTSV00
-
-script:
-
-outname = initial_run.name.substring(0, initial_run.name.indexOf("_db-pass"))
-
-"""
-#!/usr/bin/env Rscript
-
-library(dplyr)
-library(data.table)
-library(alakazam)
-
-# the function get the alleles calls frequencies
-getFreq <- function(data, call = "v_call"){
-	# get the single assignment frequency of the alleles
-	table(grep(",", data[[call]][data[[call]]!=""], invert = T, value = T))
-}
-
-addFreqInfo <- function(tab, gene, alleles){
-	paste0(tab[paste0(gene, "*", unlist(strsplit(alleles, ',')))], collapse = ";")
-}
-
-## read selected data columns
-
-data_initial_run <- fread("${initial_run}", data.table = FALSE, select = c("sequence_id", "v_call", "d_call", "j_call"))
-data_genotyped <- fread("${personal_run}", data.table = FALSE, select = c("sequence_id", "v_call", "d_call", "j_call"))
-
-## make sure that both datasets have the same sequences. 
-data_initial_run <- data_initial_run[data_initial_run[["sequence_id"]] %in% data_genotyped[["sequence_id"]],]
-data_genotyped <- data_genotyped[data_genotyped[["sequence_id"]] %in% data_initial_run[["sequence_id"]],]
-data_initial_run <- data_initial_run[order(data_initial_run[["sequence_id"]]), ]
-data_genotyped <- data_genotyped[order(data_genotyped[["sequence_id"]]), ]
-
-non_match_v <- which(data_initial_run[["v_call"]]!=data_genotyped[["v_call"]])
-
-data_initial_run[["v_call"]][non_match_v] <- data_genotyped[["v_call"]][non_match_v]
-    
-
-# for the v_calls
-print("v_call_fractions")
-tab_freq_v <- getFreq(data_genotyped, call = "v_call")
-tab_clone_v <- getFreq(data_initial_run, call = "v_call")
-# keep just alleles that passed the genotype
-tab_clone_v <- tab_clone_v[names(tab_freq_v)]
-# read the genotype table
-genoV <- fread("${v_genotype}", data.table = FALSE, colClasses = "character")
-# add information to the genotype table
-genoV <-
-  genoV %>% dplyr::group_by(gene) %>% dplyr::mutate(
-    Freq_by_Clone = addFreqInfo(tab_clone_v, gene, genotyped_alleles),
-    Freq_by_Seq = addFreqInfo(tab_freq_v, gene, genotyped_alleles)
-  )
-
-
-# for the j_calls
-print("j_call_fractions")
-tab_freq_j <- getFreq(data_genotyped, call = "j_call")
-tab_clone_j <- getFreq(data_initial_run, call = "j_call")
-# keep just alleles that passed the genotype
-tab_clone_j <- tab_clone_j[names(tab_freq_j)]
-# read the genotype table
-genoJ <- fread("${j_genotype}", data.table = FALSE, colClasses = "character")
-# add information to the genotype table
-genoJ <-
-  genoJ %>% dplyr::group_by(gene) %>% dplyr::mutate(
-    Freq_by_Clone = addFreqInfo(tab_clone_j, gene, genotyped_alleles),
-    Freq_by_Seq = addFreqInfo(tab_freq_j, gene, genotyped_alleles)
-  )
-  
-# for the d_calls; first check if the genotype file for d exists
-# if("${d_genotype}"=="*tsv")
-if (endsWith("${d_genotype}", ".tsv")){
-	# for the d_calls
-	print("d_call_fractions")
-	tab_freq_d <- getFreq(data_genotyped, call = "d_call")
-	tab_clone_d <- getFreq(data_initial_run, call = "d_call")
-	# keep just alleles that passed the genotype
-	tab_clone_d <- tab_clone_d[names(tab_freq_d)]
-	# read the genotype table
-	genoD <- fread("${d_genotype}", data.table = FALSE, colClasses = "character")
-	# add information to the genotype table
-	print(tab_clone_d)
-	print(tab_freq_d)
-	print(genoD)
-	genoD <-
-	  genoD %>% dplyr::group_by(gene) %>% dplyr::mutate(
-	    Freq_by_Clone = addFreqInfo(tab_clone_d, gene, genotyped_alleles),
-	    Freq_by_Seq = addFreqInfo(tab_freq_d, gene, genotyped_alleles)
-	  )
-	  
-	genos <- plyr::rbind.fill(genoV, genoD, genoJ)
-}else{
-	genos <- plyr::rbind.fill(genoV, genoJ)
-}
-
-genos[["Freq_by_Clone"]] <- gsub("NA", "0", genos[["Freq_by_Clone"]])
-genos[["Freq_by_Seq"]] <- gsub("NA", "0", genos[["Freq_by_Seq"]])
-
-# rename the genotyped_allele columns
-new_genotyped_allele_name = "GENOTYPED_ALLELES"
-col_loc = which(names(genos)=='genotyped_alleles')
-names(genos)[col_loc] = new_genotyped_allele_name
-
-
-# write the report
-write.table(genos, file = paste0("${outname}","_genotype.tsv"), row.names = F, sep = "\t")
-"""
 }
 
 

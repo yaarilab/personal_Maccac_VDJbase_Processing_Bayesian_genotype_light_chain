@@ -1260,7 +1260,7 @@ if(germlineFile.getName().endsWith("fasta")){
 }
 
 
-process make_igblast_annotate_j {
+process make_igblast_annotate_j_second_alignment {
 
 input:
  set val(db_name), file(germlineFile) from g_101_germlineFastaFile0_g_102

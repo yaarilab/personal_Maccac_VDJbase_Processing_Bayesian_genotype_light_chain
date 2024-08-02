@@ -129,6 +129,7 @@ g_3_germlineFastaFile_g_97= g_3_germlineFastaFile_g_97.ifEmpty([""])
 
 process D_names_fasta {
 
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /changes.csv$/) "d_changes/$filename"}
 input:
  set val(name), file(D_ref) from g_3_germlineFastaFile_g_97
 
@@ -237,6 +238,7 @@ g_4_germlineFastaFile_g_90= g_4_germlineFastaFile_g_90.ifEmpty([""])
 
 process J_names_fasta {
 
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /changes.csv$/) "j_changes/$filename"}
 input:
  set val(name), file(J_ref) from g_4_germlineFastaFile_g_90
 
@@ -408,7 +410,7 @@ if(germlineFile.getName().endsWith("fasta")){
 
 process change_novel_to_not {
 
-publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /changes.csv$/) "changes/$filename"}
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /changes.csv$/) "v_changes/$filename"}
 input:
  set val(name), file(v_ref) from g_2_germlineFastaFile_g_92
 
@@ -1556,6 +1558,7 @@ g_8_germlineFastaFile1_g_70= g_8_germlineFastaFile1_g_70.ifEmpty([""])
 
 process change_names_fasta {
 
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /new_V_novel_germline.*$/) "v_refs/$filename"}
 input:
  set val(name), file(v_ref) from g_8_germlineFastaFile1_g_70
 
